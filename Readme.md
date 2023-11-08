@@ -10,9 +10,10 @@ CSELabs computer: csel-kh1250-35.cselabs.umn.edu
 
 Any changes you made to the Makefile or existing files that would affect grading:
 
-    Add some Typedefs and functions in image_rotation.h
+Add more Typedefs and functions in image_rotation.h
     
 Plan outlining individual contributions for each member of your group:
+
     Yuan: 2.2 2.3 (All intermediate requirements)
     Matt: 2.2 2.3 (All intermediate requirements)
     Thomas: 2.2 2.3
@@ -20,7 +21,7 @@ Plan outlining individual contributions for each member of your group:
 Plan on how you are going to construct the worker threads and how you will make use of mutex
 locks and unlock and Conditions variables:
 
-    Note: Below are our own ideas combined with ChatGPT, some of them may change a little when doing the final PA3.
+Note: Below are our own ideas combined with ChatGPT, some of them may change a little when doing the final PA3.
 
 1. Initialization:
 
