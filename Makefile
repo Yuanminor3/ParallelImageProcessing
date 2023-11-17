@@ -15,7 +15,7 @@ image_rotation: $(LIBDIR)/utils.o $(INCDIR)/utils.h $(SRCDIR)/image_rotation.c
 
 test: clean all
 	@read -p "Please a Dir number: " dir_num; \
-	./image_rotation img/$$dir_num output/$$dir_num 10 180;\
+	/usr/bin/time -f "%e %P %M" ./image_rotation img/$$dir_num output/$$dir_num 10 180;\
 
 
 outdir: 
@@ -24,3 +24,4 @@ outdir:
 clean:
 	rm -f image_rotation
 	rm -rf output
+	rm -f request_log

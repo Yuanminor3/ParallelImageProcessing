@@ -1,50 +1,104 @@
 
 Project group number: 33
 
-Group Member:
+Group Member and x500s:
+
     Yuan Jiang ( jian0655 )
     Matthew Olson ( olso9444 )
     Thomas Nicklaus ( nickl098 )
 
-CSELabs computer: csel-kh1250-35.cselabs.umn.edu
+The name of the CSELabs computer that you tested your code on: 
+    
+    csel-kh1250-35.cselabs.umn.edu
+    
+Members’ individual contributions:
+
+    Yuan: 2.2 2.3 2.4 2.5 2.6 2.7(extra points)
+    Matt: 2.2 2.3 2.4 2.5 2.6 2.7(extra points)
+    Thomas: 2.2 2.3 2.4
 
 Any changes you made to the Makefile or existing files that would affect grading:
 
-Add more Typedefs and functions in image_rotation.h
-    
-Plan outlining individual contributions for each member of your group:
+    Add some Typedefs and functions in image_rotation.h
+    Add "rm -f request_log" under "clean:" in Makefile for testing
+    Extra work: Add "/usr/bin/time -f "%e %P %M"" before "./image_rotation img/$$dir_num output/$$dir_num 10 180;\"
 
-    Yuan: 2.2 2.3 (All intermediate requirements)
-    Matt: 2.2 2.3 (All intermediate requirements)
-    Thomas: 2.2 2.3
+Any assumptions that you made that weren’t outlined in section 7
 
-Plan on how you are going to construct the worker threads and how you will make use of mutex
-locks and unlock and Conditions variables:
+    N/A
 
-Note: Below are our own ideas combined with ChatGPT, some of them may change a little when doing the final PA3.
+How you designed your program for Parallel image processing (again, high-level pseudocode would be acceptable/preferred for this part)
+(If your original design (intermediate submission) was different, explain how it changed)
 
-1. Initialization:
+    //There are one main thread and one processing thread and multiple worker threads in total.
+    ...// Initializations (Queue structure, arguments from main, thread pool...)
+    ...// Initializations (mutex, synchronization...)
 
-Define a mutex lock (pthread_mutex_t) and condition variables (pthread_cond_t) for synchronizing access to the request queue. Initialize the mutex and condition variable before spawning worker threads.
+    Processing thread:
+        open(dir)
+        traverse(dir){
+            //critical section (lock and unlock)
+            while (size == maxSize){
+                wait(pro_cond)
+            }
+            enqueue(image_info)
+            signal(work_cond)
+        }
+        // traverse all
+        //critical section (lock and unlock)
+        while (num_file_processed < num_file_added){
+            wait(pro_cond)
+        }
+        broadcast(allTraverseDone)
+        free()
+        exit(pro_thread)
 
-2. Worker Thread Function:
+    worker threads: // multiple threads
+        while(1){
+            while(size <= 0){
+                while(allTraverseDone){
+                    exit(worker_thread)
+                }
+                wait(work_cond)
+            }
+            //critical section (lock and unlock)
+            dequeue(image_info)
+            getInfo(Image)
+            rotation(Image)
+            storeOutputDir(Image)
 
-Each worker thread starts by locking the mutex with pthread_mutex_lock to safely access the queue.
-It then checks if the queue is empty. If it is, it waits on the condition variable using pthread_cond_wait, which atomically unlocks the mutex and waits for the condition to be signaled.
-Once signaled (the processing thread has added work to the queue), or if the queue was not empty, the worker thread locks the mutex again if pthread_cond_wait was called and then proceeds to process the request.
+            free()
 
-3. Queue Monitoring and Processing:
+            log(Image_info)
 
-The worker thread retrieves the next available request from the queue.
-It processes the request, which includes loading the image, rotating it, and saving the result.
-After processing a request, the thread checks the queue for more work. If there are no more items and the processing thread has signaled completion, the worker thread can exit.
+        }
 
-4. Signaling:
+    main:
+        read(arguments)
+        open(logFile)
 
-When the processing thread places a new request in the queue, it signals a condition variable with pthread_cond_signal.
-Upon completion of adding all requests to the queue, the processing thread should send a termination signal to worker threads, possibly by placing a special 'termination' request in the queue or setting a global flag.
+        processing_thread()
+        for (){
+            worker_threads()
+        }
+        joint_thread(processing_thread)
+        joint_All_threads(worker_threads)
 
-5. Termination:
+        destroy_all_mutex()
+        free()
 
-Worker threads should be joinable so that the main thread can wait for all worker threads to finish by calling pthread_join.
-Once all worker threads have finished processing, clean up the mutex and condition variable.
+Any code that you used AI helper tools to write with a clear justification and explanation of the code (Please see below for the AI tools acceptable use policy)
+
+    Most of ideas were coming from Lab 9 but we asked ChatGPT learn how to make a good Typedef especially for Queue structure
+
+Program Analysis Document(optional)
+
+    In Makefile, we revised line 18 to "/usr/bin/time -f "%e %P %M" ./image_rotation img/$$dir_num output/$$dir_num 10 180;\"
+    Here:
+        %e : Elapsed real (wall clock) time used by the process, in seconds.
+        %P : Percentage of the CPU that this job got. This is just user + system times divided by the total running time. It also prints a percentage sign.
+        %M : Maximum resident set size of the process during its lifetime, in Kilobytes.
+
+    Reference: https://www.cyberciti.biz/faq/unix-linux-time-command-examples-usage-syntax/
+
+    More details are in PDF file located the same directory as Makefile.
